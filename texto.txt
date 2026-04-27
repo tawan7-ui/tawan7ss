@@ -1,0 +1,125 @@
+import os
+import time
+from datetime import datetime
+from colorama import Fore, Style, init
+
+init(autoreset=True)
+
+ASSINATURA = "tawan7 ss"
+
+# CORES (tudo azul)
+azul = Fore.BLUE
+ciano = Fore.CYAN
+branco = Fore.WHITE
+
+def clear():
+    os.system("clear")
+
+def loading():
+    print(azul + "\n[~] Iniciando sistema", end="")
+    for _ in range(5):
+        time.sleep(0.3)
+        print(".", end="", flush=True)
+    print("\n")
+
+def banner():
+    clear()
+    print(azul + """
+████████╗ █████╗ ██╗    ██╗ █████╗ ███╗   ██╗
+╚══██╔══╝██╔══██╗██║    ██║██╔══██╗████╗  ██║
+   ██║   ███████║██║ █╗ ██║███████║██╔██╗ ██║
+   ██║   ██╔══██║██║███╗██║██╔══██║██║╚██╗██║
+   ██║   ██║  ██║╚███╔███╔╝██║  ██║██║ ╚████║
+   ╚═╝   ╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
+""")
+    print(ciano + "="*50)
+    print(branco + f"   SYSTEM SCANNER :: {ASSINATURA}")
+    print(ciano + "="*50)
+
+# ROOT CHECK
+def check_root():
+    print(ciano + "\n[+] Verificando ROOT...")
+    time.sleep(0.5)
+
+    paths = ["/system/xbin/su", "/system/bin/su", "/sbin/su"]
+    found = False
+
+    for p in paths:
+        if os.path.exists(p):
+            print(azul + f"[ALERT] ROOT DETECTADO -> {p}")
+            found = True
+
+    if os.system("which su > /dev/null 2>&1") == 0:
+        print(azul + "[ALERT] COMANDO SU ENCONTRADO")
+        found = True
+
+    if not found:
+        print(azul + "[OK] Nenhum root detectado")
+
+# HOOK CHECK
+def check_hook():
+    print(ciano + "\n[+] Escaneando HOOKS...")
+    time.sleep(0.5)
+
+    keywords = ["frida", "xposed", "magisk", "zygisk"]
+    proc = os.popen("ps aux").read().lower()
+
+    detected = False
+
+    for k in keywords:
+        if k in proc:
+            print(azul + f"[ALERT] HOOK DETECTADO -> {k}")
+            detected = True
+
+    if not detected:
+        print(azul + "[OK] Sistema limpo")
+
+# PROCESSOS
+def processos():
+    print(ciano + "\n[+] Processos:")
+    os.system("ps aux --sort=-%cpu | head -n 8")
+
+# LOG
+def salvar_log():
+    nome = f"scan_{int(time.time())}.txt"
+    with open(nome, "w") as f:
+        f.write(f"SCAN :: {ASSINATURA}\n")
+        f.write(str(datetime.now()) + "\n")
+
+    print(azul + f"\n[✔] Log salvo -> {nome}")
+
+# MENU
+def menu():
+    loading()
+    while True:
+        banner()
+        print(azul + "\n[1] ROOT SCAN")
+        print("[2] HOOK SCAN")
+        print("[3] PROCESSOS")
+        print("[4] FULL SCAN")
+        print("[5] EXIT")
+
+        op = input(branco + "\n>> ")
+
+        if op == "1":
+            check_root()
+        elif op == "2":
+            check_hook()
+        elif op == "3":
+            processos()
+        elif op == "4":
+            check_root()
+            check_hook()
+            processos()
+            salvar_log()
+        elif op == "5":
+            print(ciano + "\n[~] Encerrando...")
+            break
+        else:
+            print(azul + "[ERRO] Comando inválido")
+
+        input(branco + "\n[ENTER] continuar...")
+        clear()
+
+if __name__ == "__main__":
+    menu()
